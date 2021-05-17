@@ -25,8 +25,7 @@ var db = mongoose.connection;
 //Bind connection to error event (to get notification of connection errors)
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
 
-var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
+var usersRouter = require("./routes/userRoutes");
 
 var app = express();
 
@@ -55,13 +54,22 @@ app.use(
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
 
+//seja
+var session = require("express-session");
+app.use(
+  session({
+    secret: "work hard",
+    resave: true,
+    saveUninitialized: false,
+  })
+);
+
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
 // catch 404 and forward to error handler
