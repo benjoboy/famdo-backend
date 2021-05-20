@@ -7,42 +7,6 @@ var userModel = require("../models/userModel.js");
  */
 module.exports = {
   /**
-   * userController.list()
-   */
-  list: function (req, res) {
-    userModel.find(function (err, users) {
-      if (err) {
-        return res.status(500).json({
-          message: "Error when getting user.",
-          error: err,
-        });
-      }
-      return res.json(users);
-    });
-  },
-
-  /**
-   * userController.show()
-   */
-  show: function (req, res) {
-    var id = req.params.id;
-    userModel.findOne({ _id: id }, function (err, user) {
-      if (err) {
-        return res.status(500).json({
-          message: "Error when getting user.",
-          error: err,
-        });
-      }
-      if (!user) {
-        return res.status(404).json({
-          message: "No such user",
-        });
-      }
-      return res.json(user);
-    });
-  },
-
-  /**
    * userController.create()
    */
   create: function (req, res) {
@@ -71,12 +35,6 @@ module.exports = {
   /**
    * userController.login()
    */
-  showLogin: function (req, res) {
-    res.render("user/login");
-  },
-  showRegister: function (req, res) {
-    res.render("user/register");
-  },
   login: function (req, res, next) {
     userModel.authenticate(
       req.body.username,
@@ -96,7 +54,7 @@ module.exports = {
     );
   },
   /**
-   * userController.login()
+   * userController.logout()
    */
 
   logout: function (req, res, next) {
@@ -182,6 +140,10 @@ module.exports = {
       return res.status(204).json();
     });
   },
+
+  /**
+   * userController.loggedIn()
+   */
 
   loggedIn: function (req, res) {
     console.log(req.session.userId);

@@ -31,7 +31,7 @@ var app = express();
 
 //CORS
 var cors = require("cors");
-var allowedOrigins = ["http://localhost:4200", "http://localhost:3000"];
+var allowedOrigins = ["http://localhost:3006", "http://localhost:3000"];
 app.use(
   cors({
     credentials: true,
