@@ -12,20 +12,19 @@ module.exports = {
   create: function (req, res) {
     var user = new userModel({
       email: req.body.email,
-      username: req.body.username,
       password: req.body.password,
+      name: req.body.name,
+      surname: req.body.surname,
     });
-    user.save(function (err, userBack) {
+    user.save(function (err, user) {
       if (err) {
         return res.status(500).json({
           message: "Error when creating user",
           error: err.message,
         });
-      } else if (userBack) {
-        console.log(" yello", userBack);
-
-        req.session.userId = userBack._id;
-        req.session.username = req.body.username;
+      } else if (user) {
+        req.session.userId = user._id;
+        req.session.email = req.body.email;
       } else {
         console.log("no user");
       }
@@ -37,16 +36,16 @@ module.exports = {
    */
   login: function (req, res, next) {
     userModel.authenticate(
-      req.body.username,
+      req.body.email,
       req.body.password,
       function (error, user) {
         if (error || !user) {
-          var err = new Error("Wrong username or password.");
+          var err = new Error("Wrong email or password.");
           err.status = 401;
           return next(err);
         } else {
           req.session.userId = user._id;
-          req.session.username = req.body.username;
+          req.session.email = req.body.email;
           console.log(req.session.userId);
           return res.status(201).json(user);
         }
@@ -109,7 +108,7 @@ module.exports = {
       }
 
       user.email = req.body.email ? req.body.email : user.email;
-      user.username = req.body.username ? req.body.username : user.username;
+      user.email = req.body.username ? req.body.email : user.email;
       user.password = req.body.password ? req.body.password : user.password;
 
       user.save(function (err, user) {
@@ -152,7 +151,7 @@ module.exports = {
       return res.status(200).json({
         logged_in: true,
         user: {
-          username: req.session.username,
+          email: req.session.email,
           userId: req.session.userId,
         },
       });
@@ -160,7 +159,7 @@ module.exports = {
       return res.status(200).json({
         logged_in: false,
         user: {
-          username: "",
+          email: "",
           userId: "",
         },
       });

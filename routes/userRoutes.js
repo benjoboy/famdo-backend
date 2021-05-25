@@ -8,7 +8,6 @@ var userController = require("../controllers/userController.js");
 router.get("/profile", userController.profile);
 router.get("/logout", userController.logout);
 router.get("/logged_in", userController.loggedIn);
-router.get("/:id", userController.show);
 
 /*
  * POST
