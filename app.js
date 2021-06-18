@@ -26,6 +26,7 @@ var db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
 
 var usersRouter = require("./routes/userRoutes");
+var familyRouter = require("./routes/familyRoutes");
 
 var app = express();
 
@@ -71,6 +72,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/user", usersRouter);
+app.use("/family", familyRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

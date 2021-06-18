@@ -7,7 +7,8 @@ var userSchema = new Schema({
   password: String,
   name: String,
   surname: String,
-  groups: [],
+  families: [],
+  invitedFamilies: [],
 });
 
 //authenticate input against database
