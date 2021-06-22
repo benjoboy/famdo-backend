@@ -46,7 +46,6 @@ module.exports = {
         } else {
           req.session.userId = user._id;
           req.session.email = req.body.email;
-          console.log(req.session.userId);
           return res.status(201).json(user);
         }
       }
@@ -56,20 +55,38 @@ module.exports = {
    * userController.logout()
    */
 
-  logout: function (req, res, next) {
+  logout: function (req, res) {
     if (req.session.userId) {
       // delete session object
       req.session.destroy(function (err) {
         if (err) {
-          return next(err);
+          return res.status(500).json({ err: err, message: "unknown error" });
         } else {
-          return res.status(200).json({ info: "user is logged out" });
         }
       });
+      return res.status(200).json({ info: "user is logged out" });
     } else {
       return res.status(200).json({ info: "user is already logged out" });
     }
   },
+  /**
+   * userController.getUser()
+   */
+
+  getUser: function (req, res) {
+    userModel.findById(req.session.userId).exec(function (error, user) {
+      if (error) {
+        return res.status(500).json({ err: error });
+      } else {
+        if (user === null) {
+          return res.status(400).json({ err: error });
+        } else {
+          return res.status(200).json(user);
+        }
+      }
+    });
+  },
+
   /**
    * userController.profil()
    */
