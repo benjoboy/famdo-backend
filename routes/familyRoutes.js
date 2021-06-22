@@ -5,8 +5,9 @@ var familyController = require("../controllers/familyController.js");
 /*
  * GET
  */
+
+router.get("/:id", familyController.getFamily);
 /*
-router.get("/profile", userController.profile);
 router.get("/logout", userController.logout);
 router.get("/logged_in", userController.loggedIn);
 */

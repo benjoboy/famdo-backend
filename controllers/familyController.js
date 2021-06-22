@@ -7,6 +7,23 @@ ObjectId = require("mongodb").ObjectID;
 
 module.exports = {
   /**
+   * userController.getFamily()
+   */
+  getFamily: function (req, res) {
+    familyModel.findById(req.params.id).exec(function (error, family) {
+      if (error) {
+        return res.status(500).json({ err: error });
+      } else {
+        if (family === null) {
+          return res.status(400).json({ err: error });
+        } else {
+          return res.status(200).json(family);
+        }
+      }
+    });
+  },
+
+  /**
    * userController.create()
    */
   create: function (req, res) {
