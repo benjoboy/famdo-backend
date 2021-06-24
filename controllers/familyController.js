@@ -48,7 +48,9 @@ module.exports = {
       return res.status(201).json(family);
     });
   },
-
+  /**
+   * familyController.invite()
+   */
   invite: async function (req, res) {
     //userid, familyId, TODO push invite to user and push invited user to family
     if (!req.session.userId) {
@@ -148,7 +150,7 @@ module.exports = {
         });
         if (!invited) {
           console.log("err");
-          return res.status(204).json({
+          return res.status(201).json({
             message: "user was not invited",
           });
         }
@@ -207,5 +209,47 @@ module.exports = {
     }
 
     return res.status(200).json({ status: "accepted" });
+  },
+  /**
+   * familyController.declineInvite()
+   */
+  declineInvite: async function (req, res) {
+    //update user
+    try {
+      user = await userModel.updateOne(
+        {
+          _id: ObjectId(req.session.userId),
+        },
+        {
+          $pull: {
+            invitedFamilies: { id: req.body.familyId },
+          },
+        }
+      );
+    } catch (e) {
+      return res.status(500).json({
+        message: "error updating user",
+        error: e,
+      });
+    }
+    //update family
+    try {
+      family = await familyModel.updateOne(
+        {
+          _id: ObjectId(req.body.familyId),
+        },
+        {
+          $pull: {
+            invites: { id: req.session.userId },
+          },
+        }
+      );
+      return res.status(200).json({ message: "invite declined" });
+    } catch (e) {
+      return res.status(500).json({
+        message: "error updating user",
+        error: e,
+      });
+    }
   },
 };
