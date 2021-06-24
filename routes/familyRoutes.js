@@ -16,6 +16,7 @@ router.get("/logged_in", userController.loggedIn);
  */
 router.post("/", familyController.create);
 router.post("/invite", familyController.invite);
+router.post("/invite/accept", familyController.acceptInvite);
 
 /*
  * PUT
