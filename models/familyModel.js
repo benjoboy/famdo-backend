@@ -2,6 +2,7 @@ var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
 const ScheduleItemSchema = new Schema({
+  id: Schema.Types.ObjectId,
   title: String,
   description: String,
   start: Date,

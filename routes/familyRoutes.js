@@ -24,7 +24,8 @@ router.post("/invite/decline", familyController.declineInvite);
  * PUT
  */
 
-router.put("/schedule/create", familyController.createSchedule);
+router.put("/event/create", familyController.createEvent);
+router.put("/event/update", familyController.updateEvent);
 
 /*
  * DELETE

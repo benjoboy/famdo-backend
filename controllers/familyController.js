@@ -290,7 +290,7 @@ module.exports = {
       });
     }
   },
-  createSchedule: function (req, res) {
+  createEvent: function (req, res) {
     familymode.authorize(function (error, family) {
       if (error || !family) {
         return next(error);
@@ -318,5 +318,37 @@ module.exports = {
         );
       }
     });
+  },
+  updateEvent: function (req, res) {
+    familyModel.update(
+      { "schedule.id": req.body.eventId },
+      {
+        $set: {
+          "schedule.$.title": req.body.title,
+          "schedule.$.description": req.body.description,
+          "schedule.$.start": req.body.start,
+          "schedule.$.end": req.body.end,
+          "schedule.$.isAllDay": req.body.isAllDay,
+        },
+      },
+      function (err, res) {
+        console.log("err", err, "res", res);
+
+        if (err) {
+          return res.status(500).json({
+            message: "Error updating event",
+            error: err,
+          });
+        } else if (res.nModified === 0) {
+          return res.status(500).json({
+            message: "Error updating event",
+          });
+        }
+        return res.status(201).json({
+          status: "updated",
+          res: res,
+        });
+      }
+    );
   },
 };
