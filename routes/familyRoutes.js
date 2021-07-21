@@ -30,5 +30,6 @@ router.put("/event/update", familyController.updateEvent);
 /*
  * DELETE
  */
+router.delete("/event", familyController.deleteEvent);
 
 module.exports = router;
