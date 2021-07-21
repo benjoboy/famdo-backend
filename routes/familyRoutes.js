@@ -7,9 +7,10 @@ var familyController = require("../controllers/familyController.js");
  */
 
 router.get("/:id", familyController.getFamily);
+router.get("/schedule", familyController.getSchedule);
 /*
-router.get("/logout", userController.logout);
-router.get("/logged_in", userController.loggedIn);
+router.get("/logout", familyController.logout);
+router.get("/logged_in", familyController.loggedIn);
 */
 /*
  * POST
@@ -22,9 +23,9 @@ router.post("/invite/decline", familyController.declineInvite);
 /*
  * PUT
  */
-/*
-router.put("/:id", userController.update);
-*/
+
+router.put("/schedule/create", familyController.createSchedule);
+
 /*
  * DELETE
  */

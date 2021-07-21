@@ -42,5 +42,10 @@ familySchema.statics.authorize = async function () {
       err.status = 401;
       return callback(err);
     }
-  } catch (e) {}
+  } catch (e) {
+    return res.status(500).json({
+      message: "error authorizing user",
+      error: e,
+    });
+  }
 };

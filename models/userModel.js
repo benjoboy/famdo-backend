@@ -7,7 +7,7 @@ var userSchema = new Schema({
   password: String,
   name: String,
   surname: String,
-  families: [],
+  families: Schema.Types.ObjectId,
   invitedFamilies: [],
 });
 

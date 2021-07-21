@@ -46,6 +46,7 @@ module.exports = {
         } else {
           req.session.userId = user._id;
           req.session.email = req.body.email;
+          req.session.families = user.families;
           return res.status(201).json(user);
         }
       }
@@ -161,24 +162,25 @@ module.exports = {
    * userController.loggedIn()
    */
 
-  loggedIn: function (req, res) {
+  loggedIn: async function (req, res) {
     console.log(req.session.userId);
 
     if (req.session.userId) {
-      return res.status(200).json({
-        logged_in: true,
-        user: {
-          email: req.session.email,
-          userId: req.session.userId,
-        },
-      });
+      try {
+        user = await userModel.findById(req.session.userId);
+        return res.status(200).json({
+          logged_in: true,
+          user: user,
+        });
+      } catch (e) {
+        return res.status(500).json({
+          message: "error getting user",
+          error: e,
+        });
+      }
     } else {
       return res.status(200).json({
         logged_in: false,
-        user: {
-          email: "",
-          userId: "",
-        },
       });
     }
   },

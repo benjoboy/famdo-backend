@@ -1,7 +1,10 @@
 var express = require("express");
 const session = require("express-session");
 var router = express.Router();
-familyModel = require("../models/familyModel");
+familySchema = require("../models/familyModel");
+familyModel = familySchema.Family;
+scheduleItem = familySchema.ScheduleItem;
+
 userModel = require("../models/userModel.js");
 ObjectId = require("mongodb").ObjectID;
 
@@ -10,6 +13,7 @@ module.exports = {
    * familyController.getFamily()
    */
   getFamily: function (req, res) {
+    console.log(req.session.userId);
     familyModel.findById(req.params.id).exec(function (error, family) {
       if (error) {
         return res.status(500).json({ err: error });
@@ -17,7 +21,16 @@ module.exports = {
         if (family === null) {
           return res.status(400).json({ err: error });
         } else {
-          return res.status(200).json(family);
+          if (
+            family.members.filter((member) => member.id === req.session.userId)
+              .length > 0
+          )
+            return res.status(200).json(family);
+          else {
+            return res
+              .status(400)
+              .json({ err: "user is not a part of this family" });
+          }
         }
       }
     });
@@ -56,7 +69,6 @@ module.exports = {
     if (!req.session.userId) {
       return res.status(401).json("user is not logged in");
     }
-
     try {
       //get family
       const family = await familyModel.findById(req.body.familyId);
@@ -81,7 +93,7 @@ module.exports = {
       });
     }
 
-    //update invited users invitedFamilies arr to include the new family
+    //update invited users Familiesinvited arr to include the new family
     console.log("here");
     try {
       const user = await userModel.updateOne(
@@ -173,8 +185,8 @@ module.exports = {
           $pull: {
             invitedFamilies: { id: req.body.familyId },
           },
-          $push: {
-            families: { id: req.body.familyId },
+          $set: {
+            families: req.body.familyId,
           },
         }
       );
@@ -244,12 +256,67 @@ module.exports = {
           },
         }
       );
-      return res.status(200).json({ message: "invite declined" });
+      return res.status(200).json({ status: "declined" });
     } catch (e) {
       return res.status(500).json({
         message: "error updating user",
         error: e,
       });
     }
+  },
+  /**
+   * familyController.getSchedule()
+   */
+  getSchedule: async function (req, res) {
+    try {
+      if (req.session.families) {
+        const family = await familyModel.findById(req.session.families);
+        if (
+          family.members.filter((member) => member.id === req.session.userId)
+            .length > 0
+        ) {
+          return res.status(200).json(family.schedule);
+        } else {
+          return res.status(401).json({ message: "user is not in the family" });
+        }
+      } else {
+        return res.status(401).json({ message: "user is not in the family" });
+      }
+      //const family = await familyModel.findById("nekja");
+    } catch (e) {
+      return res.status(500).json({
+        message: "error updating getting schedule",
+        error: e,
+      });
+    }
+  },
+  createSchedule: function (req, res) {
+    familymode.authorize(function (error, family) {
+      if (error || !family) {
+        return next(error);
+      } else {
+        const item = new scheduleItem({
+          title: req.body.title,
+          description: req.body.description,
+          start: req.body.start,
+          end: req.body.end,
+          isAllDay: req.body.isAllDay,
+        });
+        familyModel.update(
+          { _id: req.session.families },
+          { $push: { schedule: item } },
+          function (err, numAffected) {
+            if (err) {
+              return res.status(500).json({
+                message: "Error when creating event",
+                error: err,
+              });
+            } else if (numAffected > 0) {
+              return res.status(201).json({ status: "created" });
+            }
+          }
+        );
+      }
+    });
   },
 };
