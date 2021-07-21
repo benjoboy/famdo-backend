@@ -22,7 +22,25 @@ var Family = mongoose.model("Family", familySchema);
 module.exports = { Family, ScheduleItem };
 
 //authorize user as member of family
-/*
-familySchema.statics.authorize = function () {
 
-}*/
+familySchema.statics.authorize = async function () {
+  try {
+    if (req.session.families) {
+      const family = await familyModel.findById(req.session.families);
+      if (
+        family.members.filter((member) => member.id === req.session.userId)
+          .length > 0
+      ) {
+        return callback(null, family);
+      } else {
+        var err = new Error("User is not part of the family.");
+        err.status = 401;
+        return callback(err);
+      }
+    } else {
+      var err = new Error("User is not part of a family.");
+      err.status = 401;
+      return callback(err);
+    }
+  } catch (e) {}
+};
