@@ -306,6 +306,8 @@ module.exports = {
             start: new Date(req.body.event.start),
             end: new Date(req.body.event.end),
             isAllDay: req.body.event.isAllDay,
+            recurrenceRule: req.body.event.recurrenceRule,
+            recurrenceExceptions: req.body.event.recurrenceExceptions,
           };
           const item2 = new scheduleItem(item);
           familyModel.updateOne(
@@ -350,6 +352,9 @@ module.exports = {
                 "schedule.$.start": req.body.event.start,
                 "schedule.$.end": req.body.event.end,
                 "schedule.$.isAllDay": req.body.event.isAllDay,
+                "schedule.$.recurrenceRule": req.body.event.recurrenceRule,
+                "schedule.$.recurrenceExceptions":
+                  req.body.event.recurrenceExceptions,
               },
             },
             function (err, resp) {

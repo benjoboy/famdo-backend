@@ -8,6 +8,8 @@ const ScheduleItemSchema = new Schema({
   start: Date,
   end: Date,
   isAllDay: Boolean,
+  recurrenceRule: String,
+  recurrenceExceptions: Date,
 });
 
 var familySchema = new Schema({
