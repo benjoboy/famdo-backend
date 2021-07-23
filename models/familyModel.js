@@ -7,7 +7,7 @@ const ScheduleItemSchema = new Schema({
   description: String,
   start: Date,
   end: Date,
-  isAllDay: false,
+  isAllDay: Boolean,
 });
 
 var familySchema = new Schema({
@@ -18,35 +18,30 @@ var familySchema = new Schema({
   schedule: [ScheduleItemSchema],
 });
 
-var ScheduleItem = mongoose.model("ScheduleItem", ScheduleItemSchema);
-var Family = mongoose.model("Family", familySchema);
-module.exports = { Family, ScheduleItem };
-
 //authorize user as member of family
-
-familySchema.statics.authorize = async function () {
+familySchema.statics.authorize = async function (families, userId, callback) {
   try {
-    if (req.session.families) {
-      const family = await familyModel.findById(req.session.families);
-      if (
-        family.members.filter((member) => member.id === req.session.userId)
-          .length > 0
-      ) {
+    if (families) {
+      const family = await familyModel.findById(families);
+      if (family.members.filter((member) => member.id === userId).length > 0) {
+        console.log("callback");
         return callback(null, family);
       } else {
         var err = new Error("User is not part of the family.");
         err.status = 401;
-        return callback(err);
+        return callback(err, null);
       }
     } else {
       var err = new Error("User is not part of a family.");
       err.status = 401;
-      return callback(err);
+      return callback(err, null);
     }
   } catch (e) {
-    return res.status(500).json({
-      message: "error authorizing user",
-      error: e,
-    });
+    console.log("mhm");
+    throw e;
   }
 };
+
+var ScheduleItem = mongoose.model("ScheduleItem", ScheduleItemSchema);
+var Family = mongoose.model("Family", familySchema);
+module.exports = { Family, ScheduleItem };

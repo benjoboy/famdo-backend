@@ -290,37 +290,50 @@ module.exports = {
       });
     }
   },
-  createEvent: function (req, res) {
-    familymodel.authorize(function (error, family) {
-      if (error || !family) {
-        return next(error);
-      } else {
-        const item = new scheduleItem({
-          title: req.body.title,
-          description: req.body.description,
-          start: req.body.start,
-          end: req.body.end,
-          isAllDay: req.body.isAllDay,
-        });
-        familyModel.update(
-          { _id: req.session.families },
-          { $push: { schedule: item } },
-          function (err, numAffected) {
-            if (err) {
-              return res.status(500).json({
-                message: "Error when creating event",
-                error: err,
-              });
-            } else if (numAffected > 0) {
-              return res.status(201).json({ status: "created" });
+  createEvent: function (req, res, next) {
+    console.log("fam");
+    familyModel.authorize(
+      req.session.families,
+      req.session.userId,
+      function (error, family) {
+        console.log(req.body.end);
+        if (error || !family) {
+          return next(error);
+        } else {
+          const item = {
+            title: req.body.title,
+            description: req.body.description,
+            start: new Date(req.body.start),
+            end: new Date(req.body.end),
+            isAllDay: req.body.isAllDay,
+          };
+          const item2 = new scheduleItem(item);
+          familyModel.updateOne(
+            { _id: req.session.families },
+            { $push: { schedule: item2 } },
+            function (err, numAffected) {
+              console.log("callbakc");
+              if (err) {
+                console.log("upfate");
+
+                return res.status(500).json({
+                  message: "Error when creating event",
+                  error: err,
+                });
+              } else if (numAffected.nModified > 0) {
+                console.log("upfate2");
+                return res
+                  .status(201)
+                  .json({ status: "created", obj: numAffected });
+              }
             }
-          }
-        );
+          );
+        }
       }
-    });
+    );
   },
   updateEvent: function (req, res) {
-    familymodel.authorize(function (error, family) {
+    familyModel.authorize(function (error, family) {
       if (error || !family) {
         return next(error);
       } else {
@@ -358,5 +371,48 @@ module.exports = {
     });
   },
 
-  deleteEvent: function (req, res) {},
+  deleteEvent: function (req, res) {
+    familyModel.authorize(
+      req.session.families,
+      req.session.userId,
+      function (err, family) {
+        if (error || !family) {
+          return next(error);
+        } else {
+          familyModel.updateOne(
+            { _id: req.session.families },
+            { $pull: { schedule: { _id: ObjectId(req.body.eventId) } } },
+            function (err, numAffected) {
+              if (err) {
+                return res.status(500).json({
+                  message: "Error deleting a event",
+                  error: err,
+                });
+              }
+              return res.status(204).json({ status: "deleted" });
+            }
+          );
+        }
+      }
+    );
+
+    notebookModel.updateOne(
+      {
+        userId: ObjectId(req.session.userId),
+        _id: ObjectId(req.params.notebookId),
+      },
+      {
+        $pull: { notes: { _id: ObjectId(req.params.noteId) } },
+      },
+      function (err, note) {
+        if (err) {
+          return res.status(500).json({
+            message: "Error deleting a note",
+            error: err,
+          });
+        }
+        return res.status(204).json();
+      }
+    );
+  },
 };
