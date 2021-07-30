@@ -1,5 +1,6 @@
 var express = require("express");
 const session = require("express-session");
+const { Note } = require("../models/familyModel");
 var router = express.Router();
 familySchema = require("../models/familyModel");
 familyModel = familySchema.Family;
@@ -401,6 +402,86 @@ module.exports = {
                   error: err,
                 });
               } else return res.status(202).json({ status: "deleted" });
+            }
+          );
+        }
+      }
+    );
+  },
+
+  createNote: function (req, res, next) {
+    console.log("fam");
+    familyModel.authorize(
+      req.session.families,
+      req.session.userId,
+      function (error, family) {
+        console.log(req.body.end);
+        if (error || !family) {
+          return next(error);
+        } else {
+          const item = {
+            title: req.body.content.title,
+            nontent: req.body.content.nontent,
+          };
+          const item2 = new Note(item);
+          familyModel.updateOne(
+            { _id: req.session.families },
+            { $push: { notebook: item2 } },
+            function (err, numAffected) {
+              console.log("callbakc");
+              if (err) {
+                console.log("upfate");
+
+                return res.status(500).json({
+                  message: "Error when creating note",
+                  error: err,
+                });
+              } else if (numAffected.nModified > 0) {
+                console.log("upfate2");
+                return res.status(201).json({ status: "created", item2 });
+              }
+            }
+          );
+        }
+      }
+    );
+  },
+  updateNote: function (req, res, next) {
+    familyModel.authorize(
+      req.session.families,
+      req.session.userId,
+      function (error, family) {
+        if (error || !family) {
+          return next(error);
+        } else {
+          familyModel.updateOne(
+            {
+              _id: ObjectId(req.session.families),
+              "schedule._id": ObjectId(req.body.note._id),
+            },
+            {
+              $set: {
+                "schedule.$.title": req.body.event.title,
+                "schedule.$.content": req.body.note.content,
+              },
+            },
+            function (err, resp) {
+              console.log("err", err, "res", resp);
+
+              if (err) {
+                return res.status(500).json({
+                  message: "Error updating note",
+                  error: err,
+                });
+              } else if (resp.nModified === 0) {
+                return res.status(500).json({
+                  message: "Error updating note",
+                });
+              }
+              return res.status(201).json({
+                status: "updated",
+                res: resp,
+              });
             }
           );
         }

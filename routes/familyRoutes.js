@@ -27,6 +27,9 @@ router.post("/invite/decline", familyController.declineInvite);
 router.put("/event/create", familyController.createEvent);
 router.put("/event/update", familyController.updateEvent);
 
+router.put("/note/create", familyController.createNote);
+router.put("/note/update", familyController.updateNote);
+
 /*
  * DELETE
  */

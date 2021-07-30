@@ -11,6 +11,11 @@ const ScheduleItemSchema = new Schema({
   recurrenceRule: String,
   recurrenceExceptions: Date,
 });
+const NoteSchema = new Schema({
+  id: Schema.Types.ObjectId,
+  title: String,
+  content: String,
+});
 
 var familySchema = new Schema({
   owner: Schema.Types.ObjectId,
@@ -18,6 +23,7 @@ var familySchema = new Schema({
   members: [],
   invites: [],
   schedule: [ScheduleItemSchema],
+  notebook: [NoteSchema],
 });
 
 //authorize user as member of family
@@ -45,5 +51,6 @@ familySchema.statics.authorize = async function (families, userId, callback) {
 };
 
 var ScheduleItem = mongoose.model("ScheduleItem", ScheduleItemSchema);
+var Note = mongoose.model("Note", NoteSchema);
 var Family = mongoose.model("Family", familySchema);
-module.exports = { Family, ScheduleItem };
+module.exports = { Family, ScheduleItem, Note };
