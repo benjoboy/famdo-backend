@@ -16,6 +16,14 @@ const NoteSchema = new Schema({
   title: String,
   content: String,
 });
+const ChoreSchema = new Schema({
+  name: String,
+  description: String,
+  points: Number,
+  completed: { type: Boolean, default: false },
+  completed_by: Schema.Types.ObjectId,
+  deadline: Date,
+});
 
 var familySchema = new Schema({
   owner: Schema.Types.ObjectId,
@@ -24,6 +32,7 @@ var familySchema = new Schema({
   invites: [],
   schedule: [ScheduleItemSchema],
   notebook: [NoteSchema],
+  chores: [ChoreSchema],
 });
 
 //authorize user as member of family
@@ -52,5 +61,6 @@ familySchema.statics.authorize = async function (families, userId, callback) {
 
 var ScheduleItem = mongoose.model("ScheduleItem", ScheduleItemSchema);
 var Note = mongoose.model("Note", NoteSchema);
+var Chore = mongoose.model("Chore", ChoreSchema);
 var Family = mongoose.model("Family", familySchema);
-module.exports = { Family, ScheduleItem, Note };
+module.exports = { Family, ScheduleItem, Note, Chore };

@@ -30,9 +30,15 @@ router.put("/event/update", familyController.updateEvent);
 router.put("/note/create", familyController.createNote);
 router.put("/note/update", familyController.updateNote);
 
+router.put("/chore/create", familyController.createChore);
+//router.put("/chore/update", familyController.updateNote);
+router.put("/chore/done", familyController.choreDone);
+
 /*
  * DELETE
  */
 router.delete("/event/:id", familyController.deleteEvent);
+router.delete("/note/:id", familyController.deleteNote);
+router.delete("/chore/:id", familyController.deleteChore);
 
 module.exports = router;

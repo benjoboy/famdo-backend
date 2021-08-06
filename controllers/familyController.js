@@ -1,6 +1,6 @@
 var express = require("express");
 const session = require("express-session");
-const { Note } = require("../models/familyModel");
+const { Note, Chore } = require("../models/familyModel");
 var router = express.Router();
 familySchema = require("../models/familyModel");
 familyModel = familySchema.Family;
@@ -420,8 +420,8 @@ module.exports = {
           return next(error);
         } else {
           const item = {
-            title: req.body.content.title,
-            nontent: req.body.content.nontent,
+            title: req.body.note.title,
+            content: req.body.note.content,
           };
           const item2 = new Note(item);
           familyModel.updateOne(
@@ -447,6 +447,7 @@ module.exports = {
     );
   },
   updateNote: function (req, res, next) {
+    console.log(req.body.note);
     familyModel.authorize(
       req.session.families,
       req.session.userId,
@@ -457,12 +458,12 @@ module.exports = {
           familyModel.updateOne(
             {
               _id: ObjectId(req.session.families),
-              "schedule._id": ObjectId(req.body.note._id),
+              "notebook._id": ObjectId(req.body.note._id),
             },
             {
               $set: {
-                "schedule.$.title": req.body.event.title,
-                "schedule.$.content": req.body.note.content,
+                "notebook.$.title": req.body.note.title,
+                "notebook.$.content": req.body.note.content,
               },
             },
             function (err, resp) {
@@ -482,6 +483,143 @@ module.exports = {
                 status: "updated",
                 res: resp,
               });
+            }
+          );
+        }
+      }
+    );
+  },
+  deleteNote: function (req, res, next) {
+    console.log("234", req.params.id);
+    familyModel.authorize(
+      req.session.families,
+      req.session.userId,
+      function (error, family) {
+        if (error || !family) {
+          return next(error);
+        } else {
+          familyModel.updateOne(
+            { _id: req.session.families },
+            { $pull: { notebook: { _id: ObjectId(req.params.id) } } },
+            function (err, numAffected) {
+              if (err || numAffected.nModified === 0) {
+                console.log("erreorere");
+                return res.status(500).json({
+                  message: "Error deleting a event",
+                  error: err,
+                  res: numAffected,
+                });
+              } else return res.status(202).json({ status: "deleted" });
+            }
+          );
+        }
+      }
+    );
+  },
+  deleteChore: function (req, res, next) {
+    familyModel.authorize(
+      req.session.families,
+      req.session.userId,
+      function (error, family) {
+        if (error || !family) {
+          return next(error);
+        } else {
+          familyModel.updateOne(
+            { _id: req.session.families },
+            { $pull: { chores: { _id: ObjectId(req.params.id) } } },
+            function (err, numAffected) {
+              if (err || numAffected.nModified === 0) {
+                console.log("erreorere");
+                return res.status(500).json({
+                  message: "Error deleting a chore",
+                  error: err,
+                  res: numAffected,
+                });
+              } else return res.status(202).json({ status: "deleted" });
+            }
+          );
+        }
+      }
+    );
+  },
+
+  createChore: function (req, res, next) {
+    console.log("fam");
+    familyModel.authorize(
+      req.session.families,
+      req.session.userId,
+      function (error, family) {
+        console.log(req.body.end);
+        if (error || !family) {
+          return next(error);
+        } else {
+          const item = {
+            name: req.body.chore.name,
+            description: req.body.chore.description,
+            points: req.body.chore.points,
+            deadline: req.body.chore.deadline,
+          };
+          const item2 = new Chore(item);
+          familyModel.updateOne(
+            { _id: req.session.families },
+            { $push: { chores: item2 } },
+            function (err, numAffected) {
+              console.log("callbakc");
+              if (err) {
+                console.log("upfate");
+
+                return res.status(500).json({
+                  message: "Error when creating note",
+                  error: err,
+                });
+              } else if (numAffected.nModified > 0) {
+                console.log("upfate2");
+                return res.status(201).json({ status: "created", item2 });
+              }
+            }
+          );
+        }
+      }
+    );
+  },
+
+  choreDone: function (req, res, next) {
+    var completed_by;
+    if (req.body.completed) completed_by = ObjectId(req.session.userId);
+    else completed_by = "";
+
+    familyModel.authorize(
+      req.session.families,
+      req.session.userId,
+      function (error, family) {
+        console.log(req.body.end);
+        if (error || !family) {
+          return next(error);
+        } else {
+          const item2 = new Chore(item);
+          familyModel.updateOne(
+            { _id: req.session.families, "chores._id": ObjectId(req.body.id) },
+            {
+              $set: {
+                "chores.$.completed": req.body.completed,
+
+                "chores.$.completed_by": completed_by,
+              },
+            },
+            function (err, numAffected) {
+              //TODO add points to user.
+              console.log("callbakc");
+              if (err) {
+                console.log("upfate");
+
+                return res.status(500).json({
+                  message: "Error when creating note",
+                  error: err,
+                });
+              } else if (numAffected.nModified > 0) {
+                console.log("upfate2");
+                return res.status(201).json({ status: "created", item2 });
+              }
             }
           );
         }
