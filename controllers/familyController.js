@@ -15,26 +15,29 @@ module.exports = {
    */
   getFamily: function (req, res) {
     console.log(req.session.userId);
-    familyModel.findById(req.params.id).exec(function (error, family) {
-      if (error) {
-        return res.status(500).json({ err: error });
-      } else {
-        if (family === null) {
-          return res.status(400).json({ err: error });
+    familyModel
+      .findById(ObjectId(req.params.id))
+      .exec(function (error, family) {
+        if (error) {
+          return res.status(500).json({ err: error });
         } else {
-          if (
-            family.members.filter((member) => member.id === req.session.userId)
-              .length > 0
-          )
-            return res.status(200).json(family);
-          else {
-            return res
-              .status(400)
-              .json({ err: "user is not a part of this family" });
+          if (family === null) {
+            return res.status(400).json({ err: error });
+          } else {
+            if (
+              family.members.filter(
+                (member) => member.id === req.session.userId
+              ).length > 0
+            )
+              return res.status(200).json(family);
+            else {
+              return res.status(200).json(family); /*res
+                .status(400)
+                .json({ err: "user is not a part of this family" });*/
+            }
           }
         }
-      }
-    });
+      });
   },
 
   /**
@@ -47,6 +50,7 @@ module.exports = {
     var family = new familyModel({
       name: req.body.name,
       owner: req.session.userId,
+      members: [{ id: req.session.userId }],
     });
     family.save(function (err, family) {
       if (err) {
@@ -55,11 +59,20 @@ module.exports = {
           error: err.message,
         });
       } else if (family) {
-        console.log(family);
+        userModel
+          .findByIdAndUpdate(ObjectId(req.session.userId), {
+            $set: { families: family._id },
+          })
+          .exec(function (err, user) {
+            console.log(user);
+            if (!err || user)
+              return res
+                .status(201)
+                .json({ status: "created", family: family });
+          });
       } else {
         console.log("no family");
       }
-      return res.status(201).json(family);
     });
   },
   /**
@@ -70,7 +83,17 @@ module.exports = {
     if (!req.session.userId) {
       return res.status(401).json("user is not logged in");
     }
+    let inviteduser;
     try {
+      //get invited user
+      invitedUser = await userModel.findOne({ email: req.body.email });
+      console.log("user invites", invitedUser);
+      if (!invitedUser) {
+        return res.status(401).json({
+          message: "no user with this email",
+          error: err,
+        });
+      }
       //get family
       const family = await familyModel.findById(req.body.familyId);
       if (family) {
@@ -99,7 +122,7 @@ module.exports = {
     try {
       const user = await userModel.updateOne(
         {
-          _id: ObjectId(req.body.invitedUserId),
+          _id: ObjectId(invitedUser._id),
         },
         {
           $push: {
@@ -108,6 +131,7 @@ module.exports = {
         }
       );
     } catch (e) {
+      console.log(e);
       return res.status(500).json({ message: "Error adding invite to user" });
     }
 
@@ -119,7 +143,7 @@ module.exports = {
         },
         {
           $push: {
-            invites: { id: req.body.invitedUserId },
+            invites: { id: invitedUser._id },
           },
         }
       );
@@ -157,7 +181,7 @@ module.exports = {
         let invited = false;
         family.invites.forEach((invite) => {
           console.log(req.session.userId, invite.id);
-          if (invite.id === req.session.userId) {
+          if (invite.id.toString() === req.session.userId) {
             invited = true;
           }
         });
@@ -596,7 +620,6 @@ module.exports = {
         if (error || !family) {
           return next(error);
         } else {
-          const item2 = new Chore(item);
           familyModel.updateOne(
             { _id: req.session.families, "chores._id": ObjectId(req.body.id) },
             {
@@ -604,21 +627,34 @@ module.exports = {
                 "chores.$.completed": req.body.completed,
 
                 "chores.$.completed_by": completed_by,
+                "chores.$.completion_date": new Date(),
               },
             },
             function (err, numAffected) {
               //TODO add points to user.
-              console.log("callbakc");
               if (err) {
                 console.log("upfate");
 
                 return res.status(500).json({
-                  message: "Error when creating note",
+                  message: "Error completing chore",
                   error: err,
                 });
               } else if (numAffected.nModified > 0) {
-                console.log("upfate2");
-                return res.status(201).json({ status: "created", item2 });
+                userModel
+                  .findByIdAndUpdate(ObjectId(req.session.userId), {
+                    $inc: { points: req.body.points },
+                  })
+                  .exec(function (err, user) {
+                    if (err) {
+                      console.log("error user s", err);
+                      return res.status(500).json({
+                        message: "Error completing chore",
+                        error: err,
+                      });
+                    } else {
+                      return res.status(201).json({ status: "updated" });
+                    }
+                  });
               }
             }
           );
