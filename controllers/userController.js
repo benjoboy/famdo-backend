@@ -18,6 +18,7 @@ module.exports = {
     });
     user.save(function (err, user) {
       if (err) {
+        console.log(err);
         return res.status(500).json({
           message: "Error when creating user",
           error: err.message,
@@ -35,6 +36,8 @@ module.exports = {
    * userController.login()
    */
   login: function (req, res, next) {
+    console.log(req.body.email, req.body.password);
+    console.log(req.params.id);
     userModel.authenticate(
       req.body.email,
       req.body.password,
@@ -75,7 +78,7 @@ module.exports = {
    */
 
   getUser: function (req, res) {
-    userModel.findById(req.session.userId).exec(function (error, user) {
+    userModel.findById(ObjectId(req.params.id)).exec(function (error, user) {
       if (error) {
         return res.status(500).json({ err: error });
       } else {
@@ -168,6 +171,7 @@ module.exports = {
     if (req.session.userId) {
       try {
         user = await userModel.findById(req.session.userId);
+        console.log(user);
         return res.status(200).json({
           logged_in: true,
           user: user,

@@ -5,9 +5,9 @@ var userController = require("../controllers/userController.js");
 /*
  * GET
  */
-router.get("/", userController.getUser);
 router.get("/logout", userController.logout);
 router.get("/logged_in", userController.loggedIn);
+router.get("/:id", userController.getUser);
 
 /*
  * POST

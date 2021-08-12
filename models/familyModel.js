@@ -20,9 +20,10 @@ const ChoreSchema = new Schema({
   name: String,
   description: String,
   points: Number,
+  deadline: Date,
   completed: { type: Boolean, default: false },
   completed_by: Schema.Types.ObjectId,
-  deadline: Date,
+  completion_date: Date,
 });
 
 var familySchema = new Schema({
@@ -40,6 +41,7 @@ familySchema.statics.authorize = async function (families, userId, callback) {
   try {
     if (families) {
       const family = await familyModel.findById(families);
+      console.log(family.members);
       if (family.members.filter((member) => member.id === userId).length > 0) {
         console.log("callback");
         return callback(null, family);

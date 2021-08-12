@@ -7,8 +7,9 @@ var userSchema = new Schema({
   password: String,
   name: String,
   surname: String,
-  families: Schema.Types.ObjectId,
+  families: { type: Schema.Types.ObjectId, default: null },
   invitedFamilies: [],
+  points: { type: Number, default: 0 },
 });
 
 //authenticate input against database
@@ -36,7 +37,6 @@ userSchema.pre("save", function (next) {
   var user = this;
   bcrypt.hash(user.password, 10, function (err, hash) {
     if (err) {
-      console.log(err.message);
       return next(err);
     }
     user.password = hash;
