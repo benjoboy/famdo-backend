@@ -47,11 +47,14 @@ familySchema.statics.authorize = async function (families, userId, callback) {
         return callback(null, family);
       } else {
         var err = new Error("User is not part of the family.");
+        console.log("not authorized");
+
         err.status = 401;
         return callback(err, null);
       }
     } else {
       var err = new Error("User is not part of a family.");
+      console.log("not authorized");
       err.status = 401;
       return callback(err, null);
     }
